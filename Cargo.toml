@@ -1,0 +1,16 @@
+[package]
+name = "compio-ws"
+version = "0.1.0"
+edition = "2021"
+description = "WebSocket library for the compio runtime"
+license = "MIT"
+
+[dependencies]
+compio = { version = "0.15.0", features = ["io", "io-compat", "macros"] }
+tungstenite = "0.27.0"
+compio-io = "0.7.0"
+compio-net = "0.8"
+compio-runtime = "0.8"
+
+[features]
+default = []
