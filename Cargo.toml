@@ -11,6 +11,8 @@ tungstenite = "0.27.0"
 compio-io = "0.7.0"
 compio-net = "0.8"
 compio-runtime = "0.8"
+compio-buf = "0.6.0"
+compio-tls = "0.6.0"
 
 [features]
 default = []

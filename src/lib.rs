@@ -1,13 +1,20 @@
+pub mod stream;
+
 use std::io::ErrorKind;
 
 use compio::io::compat::SyncStream;
 use compio_io::{AsyncRead, AsyncWrite};
+use tungstenite::client::uri_mode;
+use tungstenite::stream::Mode;
+
 use tungstenite::{
     client::IntoClientRequest,
     handshake::server::{Callback, NoCallback},
     protocol::{CloseFrame, Role, WebSocketConfig},
     Error as WsError, HandshakeError, Message, WebSocket,
 };
+
+pub use crate::stream::MaybeTlsStream;
 
 pub struct WebSocketStream<S> {
     inner: WebSocket<SyncStream<S>>,
@@ -278,4 +285,30 @@ where
             }
         }
     }
+}
+
+#[inline]
+pub(crate) fn domain(
+    request: &tungstenite::handshake::client::Request,
+) -> Result<String, tungstenite::Error> {
+    request
+        .uri()
+        .host()
+        .map(|host| {
+            // If host is an IPv6 address, it might be surrounded by brackets. These brackets are
+            // *not* part of a valid IP, so they must be stripped out.
+            //
+            // The URI from the request is guaranteed to be valid, so we don't need a separate
+            // check for the closing bracket.
+            let host = if host.starts_with('[') {
+                &host[1..host.len() - 1]
+            } else {
+                host
+            };
+
+            host.to_owned()
+        })
+        .ok_or(tungstenite::Error::Url(
+            tungstenite::error::UrlError::NoHostName,
+        ))
 }
