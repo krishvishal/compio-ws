@@ -7,8 +7,6 @@ use std::io::ErrorKind;
 
 use compio::io::compat::SyncStream;
 use compio_io::{AsyncRead, AsyncWrite};
-use tungstenite::client::uri_mode;
-use tungstenite::stream::Mode;
 
 use tungstenite::{
     client::IntoClientRequest,
@@ -18,6 +16,16 @@ use tungstenite::{
 };
 
 pub use crate::stream::MaybeTlsStream;
+
+pub use tungstenite::{handshake::client::Response, Message as WebSocketMessage};
+
+// #[cfg(feature = "rustls")]
+pub use crate::rustls::{
+    client_async_tls, client_async_tls_with_config, client_async_tls_with_connector,
+    client_async_tls_with_connector_and_config, connect_async, connect_async_with_config,
+    connect_async_with_tls_connector, connect_async_with_tls_connector_and_config, AutoStream,
+    ConnectStream, Connector,
+};
 
 pub struct WebSocketStream<S> {
     inner: WebSocket<SyncStream<S>>,
