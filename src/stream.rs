@@ -1,6 +1,7 @@
 use compio_buf::{BufResult, IoBuf, IoBufMut};
 use compio_io::{AsyncRead, AsyncWrite};
 use compio_tls::TlsStream;
+use std::io::Result as IoResult;
 
 /// Stream that can be either plain TCP or TLS-encrypted
 #[derive(Debug)]
@@ -25,21 +26,42 @@ impl<S> MaybeTlsStream<S> {
     }
 }
 
-impl<S> MaybeTlsStream<S>
+impl<S> AsyncRead for MaybeTlsStream<S>
 where
     S: AsyncRead + AsyncWrite + Unpin,
 {
-    pub async fn read<B: IoBufMut>(&mut self, buf: B) -> BufResult<usize, B> {
+    async fn read<B: IoBufMut>(&mut self, buf: B) -> BufResult<usize, B> {
         match self {
             MaybeTlsStream::Plain(stream) => stream.read(buf).await,
             MaybeTlsStream::Tls(stream) => stream.read(buf).await,
         }
     }
+}
 
-    pub async fn write<B: IoBuf>(&mut self, buf: B) -> BufResult<usize, B> {
+impl<S> AsyncWrite for MaybeTlsStream<S>
+where
+    S: AsyncRead + AsyncWrite + Unpin,
+{
+    async fn write<B: IoBuf>(&mut self, buf: B) -> BufResult<usize, B> {
         match self {
             MaybeTlsStream::Plain(stream) => stream.write(buf).await,
             MaybeTlsStream::Tls(stream) => stream.write(buf).await,
         }
     }
+
+    async fn flush(&mut self) -> IoResult<()> {
+        match self {
+            MaybeTlsStream::Plain(stream) => stream.flush().await,
+            MaybeTlsStream::Tls(stream) => stream.flush().await,
+        }
+    }
+
+    async fn shutdown(&mut self) -> IoResult<()> {
+        match self {
+            MaybeTlsStream::Plain(stream) => stream.shutdown().await,
+            MaybeTlsStream::Tls(stream) => stream.shutdown().await,
+        }
+    }
 }
+
+impl<S> Unpin for MaybeTlsStream<S> where S: Unpin {}

@@ -1,5 +1,8 @@
 pub mod stream;
 
+// #[cfg(feature = "rustls")]
+pub mod rustls;
+
 use std::io::ErrorKind;
 
 use compio::io::compat::SyncStream;
@@ -173,7 +176,7 @@ where
     accept_hdr_with_config_async(stream, callback, None).await
 }
 
-pub async fn accept_with_config_async<S>(
+pub async fn accept_async_tls_with_config<S>(
     stream: S,
     config: Option<WebSocketConfig>,
 ) -> Result<WebSocketStream<S>, WsError>
@@ -237,17 +240,17 @@ where
     R: IntoClientRequest,
     S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
 {
-    client_with_config_async(request, stream, None).await
+    client_async_with_config(request, stream, None).await
 }
 
-pub async fn client_with_config_async<R, S>(
+pub async fn client_async_with_config<R, S>(
     request: R,
     stream: S,
     config: Option<WebSocketConfig>,
 ) -> Result<(WebSocketStream<S>, tungstenite::handshake::client::Response), WsError>
 where
     R: IntoClientRequest,
-    S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
+    S: AsyncRead + AsyncWrite + Unpin,
 {
     let sync_stream = SyncStream::new(stream);
     let mut handshake_result =
