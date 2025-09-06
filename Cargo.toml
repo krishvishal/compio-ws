@@ -17,9 +17,11 @@ rustls = { version = "0.23", optional = true, default-features = false, features
     "logging",
     "std",
     "tls12",
+    "ring",
 ] }
 rustls-native-certs = { version = "0.8", optional = true }
 webpki-roots = { version = "1.0.2", optional = true }
+rustls-pemfile = "2.0"
 
 [features]
 default = []
