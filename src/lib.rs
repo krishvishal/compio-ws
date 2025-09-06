@@ -130,19 +130,15 @@ where
     }
 
     pub async fn send(&mut self, message: Message) -> Result<(), WsError> {
-        // Send the message using optimized buffer handling
         let result = self
             .handle_would_block(|ws| ws.send(message.clone()), BufferOperation::FlushFirst)
             .await?;
 
-        // CRITICAL: Ensure the message is actually sent over the network
-        let flushed = self
-            .inner
+        self.inner
             .get_mut()
             .flush_write_buf()
             .await
             .map_err(|e| WsError::Io(e))?;
-        println!("[SEND] Flushed {} bytes to network", flushed);
 
         Ok(result)
     }
@@ -210,7 +206,7 @@ where
         match handshake_result {
             Ok(mut websocket) => {
                 // Ensure any remaining data is flushed
-                let _ = websocket
+                websocket
                     .get_mut()
                     .flush_write_buf()
                     .await
@@ -221,12 +217,12 @@ where
                 let sync_stream = mid_handshake.get_mut().get_mut();
 
                 // For handshake: always try both operations
-                let _ = sync_stream
+                sync_stream
                     .flush_write_buf()
                     .await
                     .map_err(|e| WsError::Io(e))?;
 
-                let _ = sync_stream
+                sync_stream
                     .fill_read_buf()
                     .await
                     .map_err(|e| WsError::Io(e))?;
@@ -268,7 +264,7 @@ where
         match handshake_result {
             Ok((mut websocket, response)) => {
                 // Ensure any remaining data is flushed
-                let _ = websocket
+                websocket
                     .get_mut()
                     .flush_write_buf()
                     .await
@@ -279,12 +275,12 @@ where
                 let sync_stream = mid_handshake.get_mut().get_mut();
 
                 // For handshake: always try both operations
-                let _ = sync_stream
+                sync_stream
                     .flush_write_buf()
                     .await
                     .map_err(|e| WsError::Io(e))?;
 
-                let _ = sync_stream
+                sync_stream
                     .fill_read_buf()
                     .await
                     .map_err(|e| WsError::Io(e))?;
