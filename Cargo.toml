@@ -6,13 +6,19 @@ description = "WebSocket library for the compio runtime"
 license = "MIT"
 
 [dependencies]
-compio = { version = "0.15.0", features = ["io", "io-compat", "macros"] }
 tungstenite = "0.27.0"
-compio-io = "0.7.0"
-compio-net = "0.8"
-compio-runtime = "0.8"
-compio-buf = "0.6.0"
-compio-tls = { version = "0.6", optional = true, features = ["rustls"] }
+compio = { git = "https://github.com/compio-rs/compio.git", rev = "fe4243f0b6811ebc325afd081c9b087b4d9817be", features = [
+    "io",
+    "io-compat",
+    "macros",
+] }
+compio-io = { git = "https://github.com/compio-rs/compio.git", rev = "fe4243f0b6811ebc325afd081c9b087b4d9817be" }
+compio-net = { git = "https://github.com/compio-rs/compio.git", rev = "fe4243f0b6811ebc325afd081c9b087b4d9817be" }
+compio-runtime = { git = "https://github.com/compio-rs/compio.git", rev = "fe4243f0b6811ebc325afd081c9b087b4d9817be" }
+compio-buf = { git = "https://github.com/compio-rs/compio.git", rev = "fe4243f0b6811ebc325afd081c9b087b4d9817be" }
+compio-tls = { git = "https://github.com/compio-rs/compio.git", rev = "fe4243f0b6811ebc325afd081c9b087b4d9817be", features = [
+    "rustls",
+], optional = true }
 rustls = { version = "0.23", optional = true, default-features = false, features = [
     "logging",
     "std",
