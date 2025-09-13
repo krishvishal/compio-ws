@@ -11,13 +11,15 @@ use compio_io::{AsyncRead, AsyncWrite};
 use tungstenite::{
     client::IntoClientRequest,
     handshake::server::{Callback, NoCallback},
-    protocol::{CloseFrame, Role, WebSocketConfig},
+    protocol::{CloseFrame, Role},
     Error as WsError, HandshakeError, Message, WebSocket,
 };
 
 pub use crate::stream::MaybeTlsStream;
 
-pub use tungstenite::{handshake::client::Response, Message as WebSocketMessage};
+pub use tungstenite::{
+    handshake::client::Response, protocol::WebSocketConfig, Message as WebSocketMessage,
+};
 
 // #[cfg(feature = "rustls")]
 pub use crate::rustls::{
@@ -162,6 +164,10 @@ where
 
     pub fn get_mut(&mut self) -> &mut S {
         self.inner.get_mut().get_mut()
+    }
+
+    pub fn get_inner(self) -> WebSocket<SyncStream<S>> {
+        self.inner
     }
 }
 
