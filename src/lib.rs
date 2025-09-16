@@ -17,9 +17,9 @@ use tungstenite::{
 
 pub use crate::stream::MaybeTlsStream;
 
-pub use tungstenite::{
-    handshake::client::Response, protocol::WebSocketConfig, Message as WebSocketMessage,
-};
+pub use tungstenite::{handshake::client::Response, Message as WebSocketMessage};
+
+pub use tungstenite::protocol::WebSocketConfig;
 
 // #[cfg(feature = "rustls")]
 pub use crate::rustls::{
