@@ -178,6 +178,16 @@ where
     accept_hdr_async(stream, NoCallback).await
 }
 
+pub async fn accept_async_with_config<S>(
+    stream: S,
+    config: Option<WebSocketConfig>,
+) -> Result<WebSocketStream<S>, WsError>
+where
+    S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
+{
+    accept_hdr_with_config_async(stream, NoCallback, config).await
+}
+
 pub async fn accept_hdr_async<S, C>(stream: S, callback: C) -> Result<WebSocketStream<S>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
