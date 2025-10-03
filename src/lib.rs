@@ -221,7 +221,6 @@ where
     loop {
         match handshake_result {
             Ok(mut websocket) => {
-                // Ensure any remaining data is flushed
                 websocket
                     .get_mut()
                     .flush_write_buf()
@@ -232,16 +231,17 @@ where
             Err(HandshakeError::Interrupted(mut mid_handshake)) => {
                 let sync_stream = mid_handshake.get_mut().get_mut();
 
-                // For handshake: always try both operations
-                sync_stream
+                if sync_stream
                     .flush_write_buf()
                     .await
-                    .map_err(|e| WsError::Io(e))?;
-
-                sync_stream
-                    .fill_read_buf()
-                    .await
-                    .map_err(|e| WsError::Io(e))?;
+                    .map_err(|e| WsError::Io(e))?
+                    == 0
+                {
+                    sync_stream
+                        .fill_read_buf()
+                        .await
+                        .map_err(|e| WsError::Io(e))?;
+                }
 
                 handshake_result = mid_handshake.handshake();
             }
