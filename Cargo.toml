@@ -34,3 +34,15 @@ default = []
 rustls = ["dep:compio-tls", "dep:rustls", "compio-tls/rustls"]
 rustls-native-certs = ["rustls", "dep:rustls-native-certs"]
 webpki-roots = ["rustls", "dep:webpki-roots"]
+
+[dev-dependencies]
+log = "0.4"
+env_logger = "0.11"
+
+[[example]]
+name = "autobahn-client"
+required-features = []
+
+[[example]]
+name = "autobahn-server"
+required-features = []
