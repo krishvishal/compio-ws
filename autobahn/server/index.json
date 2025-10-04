@@ -1,0 +1,529 @@
+{
+   "Tungstenite": {
+      "1.1.1": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_1_1.json"
+      },
+      "1.1.2": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_1_2.json"
+      },
+      "1.1.3": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_1_3.json"
+      },
+      "1.1.4": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 4,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_1_4.json"
+      },
+      "1.1.5": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_1_5.json"
+      },
+      "1.1.6": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1039,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_1_6.json"
+      },
+      "1.1.7": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1040,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_1_7.json"
+      },
+      "1.1.8": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1029,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_1_8.json"
+      },
+      "1.2.1": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_2_1.json"
+      },
+      "1.2.2": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_2_2.json"
+      },
+      "1.2.3": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_2_3.json"
+      },
+      "1.2.4": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_2_4.json"
+      },
+      "1.2.5": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_2_5.json"
+      },
+      "1.2.6": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1050,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_2_6.json"
+      },
+      "1.2.7": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1055,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_2_7.json"
+      },
+      "1.2.8": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1039,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_1_2_8.json"
+      },
+      "2.1": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1002,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_1.json"
+      },
+      "2.10": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 3003,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_10.json"
+      },
+      "2.11": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 3010,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_11.json"
+      },
+      "2.2": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1002,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_2.json"
+      },
+      "2.3": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1002,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_3.json"
+      },
+      "2.4": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1028,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_4.json"
+      },
+      "2.5": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_5.json"
+      },
+      "2.6": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 2001,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_6.json"
+      },
+      "2.7": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 4,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_7.json"
+      },
+      "2.8": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_8.json"
+      },
+      "2.9": {
+         "behavior": "FAILED",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1002,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_2_9.json"
+      },
+      "3.1": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_3_1.json"
+      },
+      "3.2": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_3_2.json"
+      },
+      "3.3": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 2,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_3_3.json"
+      },
+      "3.4": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 37,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_3_4.json"
+      },
+      "3.5": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_3_5.json"
+      },
+      "3.6": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_3_6.json"
+      },
+      "3.7": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_3_7.json"
+      },
+      "4.1.1": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 0,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_4_1_1.json"
+      },
+      "4.1.2": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_4_1_2.json"
+      },
+      "4.1.3": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_4_1_3.json"
+      },
+      "4.1.4": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_4_1_4.json"
+      },
+      "4.1.5": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 7,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_4_1_5.json"
+      },
+      "4.2.1": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_4_2_1.json"
+      },
+      "4.2.2": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_4_2_2.json"
+      },
+      "4.2.3": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_4_2_3.json"
+      },
+      "4.2.4": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_4_2_4.json"
+      },
+      "4.2.5": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 3,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_4_2_5.json"
+      },
+      "5.1": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 4,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_1.json"
+      },
+      "5.10": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_10.json"
+      },
+      "5.11": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 4,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_11.json"
+      },
+      "5.12": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_12.json"
+      },
+      "5.13": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_13.json"
+      },
+      "5.14": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 40,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_14.json"
+      },
+      "5.15": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 2,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_15.json"
+      },
+      "5.16": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_16.json"
+      },
+      "5.17": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_17.json"
+      },
+      "5.18": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_18.json"
+      },
+      "5.19": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1007,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_19.json"
+      },
+      "5.2": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_2.json"
+      },
+      "5.20": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 1062,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_20.json"
+      },
+      "5.3": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 2,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_3.json"
+      },
+      "5.4": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 2,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_4.json"
+      },
+      "5.5": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 20,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_5.json"
+      },
+      "5.6": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 2,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_6.json"
+      },
+      "5.7": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 2,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_7.json"
+      },
+      "5.8": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 14,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_8.json"
+      },
+      "5.9": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_5_9.json"
+      },
+      "6.1.1": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 16,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_1_1.json"
+      },
+      "6.1.2": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 14,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_1_2.json"
+      },
+      "6.1.3": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 3,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_1_3.json"
+      },
+      "6.2.1": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 6,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_2_1.json"
+      },
+      "6.2.2": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 2,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_2_2.json"
+      },
+      "6.2.3": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 9,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_2_3.json"
+      },
+      "6.2.4": {
+         "behavior": "OK",
+         "behaviorClose": "UNCLEAN",
+         "duration": 10,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_2_4.json"
+      },
+      "6.3.1": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 2,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_3_1.json"
+      },
+      "6.3.2": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 1,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_3_2.json"
+      },
+      "6.4.1": {
+         "behavior": "OK",
+         "behaviorClose": "OK",
+         "duration": 10174,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_4_1.json"
+      },
+      "6.4.2": {
+         "behavior": "FAILED",
+         "behaviorClose": "FAILED",
+         "duration": 1759494976773,
+         "remoteCloseCode": null,
+         "reportfile": "tungstenite_case_6_4_2.json"
+      }
+   }
+}
