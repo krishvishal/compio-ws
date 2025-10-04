@@ -2,3 +2,4 @@
 *.crt
 *.pem
 *.key
+autobahn/server
