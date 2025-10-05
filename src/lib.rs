@@ -77,52 +77,41 @@ where
 
                     match buffer_hint {
                         BufferOperation::FillFirst => {
-                            // For read operations: try fill first, then flush if needed
-                            match sync_stream.fill_read_buf().await {
-                                Ok(_) => continue, // Successfully filled, retry operation
-                                Err(_) => {
-                                    // Fill failed or nothing to fill, try flush
-                                    sync_stream
+                            let flushed = sync_stream
                                         .flush_write_buf()
                                         .await
                                         .map_err(|e| WsError::Io(e))?;
+
+                            if flushed == 0 {
+                                    sync_stream
+                                        .fill_read_buf()
+                                        .await
+                                        .map_err(|e| WsError::Io(e))?;
                                 }
-                            }
-                        }
+                            continue;
+                                }
+
                         BufferOperation::FlushFirst => {
-                            // For write operations: try flush first, then fill if needed
-                            match sync_stream.flush_write_buf().await {
-                                Ok(0) => {
-                                    // Nothing was flushed, try fill
                                     sync_stream
-                                        .fill_read_buf()
+                                .flush_write_buf()
                                         .await
                                         .map_err(|e| WsError::Io(e))?;
-                                }
-                                Ok(_) => {
-                                    // Successfully flushed something, continue
-                                }
-                                Err(_) => {
-                                    // Flush failed, try fill as fallback
-                                    sync_stream
-                                        .fill_read_buf()
-                                        .await
-                                        .map_err(|e| WsError::Io(e))?;
-                                }
-                            }
+                            continue;
                         }
+
                         BufferOperation::Standard => {
-                            if sync_stream
+                            let flushed = sync_stream
                                 .flush_write_buf()
                                 .await
-                                .map_err(|e| WsError::Io(e))?
-                                == 0
-                            {
+                                .map_err(|e| WsError::Io(e))?;
+
+                            if flushed == 0 {
                                 sync_stream
                                     .fill_read_buf()
                                     .await
                                     .map_err(|e| WsError::Io(e))?;
                             }
+                            continue;
                         }
                     }
                 }
