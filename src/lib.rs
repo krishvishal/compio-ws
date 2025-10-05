@@ -78,24 +78,24 @@ where
                     match buffer_hint {
                         BufferOperation::FillFirst => {
                             let flushed = sync_stream
-                                        .flush_write_buf()
-                                        .await
-                                        .map_err(|e| WsError::Io(e))?;
+                                .flush_write_buf()
+                                .await
+                                .map_err(|e| WsError::Io(e))?;
 
                             if flushed == 0 {
-                                    sync_stream
-                                        .fill_read_buf()
-                                        .await
-                                        .map_err(|e| WsError::Io(e))?;
-                                }
+                                sync_stream
+                                    .fill_read_buf()
+                                    .await
+                                    .map_err(|e| WsError::Io(e))?;
+                            }
                             continue;
-                                }
+                        }
 
                         BufferOperation::FlushFirst => {
-                                    sync_stream
+                            sync_stream
                                 .flush_write_buf()
-                                        .await
-                                        .map_err(|e| WsError::Io(e))?;
+                                .await
+                                .map_err(|e| WsError::Io(e))?;
                             continue;
                         }
 
@@ -204,7 +204,7 @@ where
     S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
     C: Callback,
 {
-    let sync_stream = SyncStream::new(stream);
+    let sync_stream = SyncStream::with_capacity(1024 * 1024, stream);
     let mut handshake_result = tungstenite::accept_hdr_with_config(sync_stream, callback, config);
 
     loop {
