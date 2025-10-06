@@ -30,14 +30,18 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
             Ok(msg) => {
                 if msg.is_text() || msg.is_binary() {
                     ws_stream.send(msg).await?;
-                } else if msg.is_close() {
-                    break;
                 }
             }
-            Err(e) => {
-                error!("Error reading message: {}", e);
-                return Err(e);
-            }
+            Err(e) => match e {
+                Error::ConnectionClosed => {
+                    info!("Connection closed normally: {}", peer);
+                    break;
+                }
+                _ => {
+                    error!("Error: {}", e);
+                    return Err(e);
+                }
+            },
         }
     }
 

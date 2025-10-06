@@ -135,8 +135,15 @@ where
     }
 
     pub async fn read(&mut self) -> Result<Message, WsError> {
-        self.handle_would_block(|ws| ws.read(), BufferOperation::FillFirst)
-            .await
+        let result = self
+            .handle_would_block(|ws| ws.read(), BufferOperation::FillFirst)
+            .await;
+
+        // always flush even on error.
+        // when ConnectionClosed is returned, the close frame was written but not flushed
+        let _ = self.inner.get_mut().flush_write_buf().await;
+
+        result
     }
 
     pub async fn close(&mut self, close_frame: Option<CloseFrame>) -> Result<(), WsError> {
