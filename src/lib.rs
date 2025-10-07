@@ -21,6 +21,8 @@ pub use tungstenite::{handshake::client::Response, Message as WebSocketMessage};
 
 pub use tungstenite::protocol::WebSocketConfig;
 
+pub use tungstenite::error::Error as TungsteniteError;
+
 // #[cfg(feature = "rustls")]
 pub use crate::rustls::{
     client_async_tls, client_async_tls_with_config, client_async_tls_with_connector,
