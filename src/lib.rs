@@ -270,7 +270,7 @@ where
     R: IntoClientRequest,
     S: AsyncRead + AsyncWrite + Unpin,
 {
-    let sync_stream = SyncStream::new(stream);
+    let sync_stream = SyncStream::with_capacity(1024 * 1024, stream);
     let mut handshake_result =
         tungstenite::client::client_with_config(request, sync_stream, config);
 
