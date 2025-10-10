@@ -3,3 +3,4 @@
 *.pem
 *.key
 autobahn/server
+autobahn/client
