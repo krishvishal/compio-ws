@@ -215,9 +215,9 @@ where
             Err(HandshakeError::Interrupted(mut mid_handshake)) => {
                 let sync_stream = mid_handshake.get_mut().get_mut();
 
-                if sync_stream.flush_write_buf().await.map_err(WsError::Io)? == 0 {
-                    sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
-                }
+                sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
+
+                sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
 
                 handshake_result = mid_handshake.handshake();
             }
