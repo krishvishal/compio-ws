@@ -1,5 +1,4 @@
 use compio_net::{TcpListener, TcpStream};
-use compio_runtime;
 use compio_tls::TlsAcceptor;
 use compio_ws::accept_async;
 use rustls::ServerConfig;
@@ -55,12 +54,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     loop {
         let (stream, addr) = listener.accept().await?;
-        println!("New client connected: {}", addr);
+        println!("New client connected: {addr}");
 
         let acceptor = tls_acceptor.clone();
         compio_runtime::spawn(async move {
             if let Err(e) = handle_client_tls(stream, acceptor).await {
-                eprintln!("Error handling client {}: {}", addr, e);
+                eprintln!("Error handling client {addr}: {e}");
             }
         })
         .detach();
@@ -84,9 +83,9 @@ async fn handle_client_tls(
     loop {
         match websocket.read().await? {
             Message::Text(text) => {
-                println!("Received text: {}", text);
-                let echo_msg = format!("Echo: {}", text);
-                println!("Sending echo: {}", echo_msg);
+                println!("Received text: {text}");
+                let echo_msg = format!("Echo: {text}");
+                println!("Sending echo: {echo_msg}");
 
                 websocket.send(Message::Text(echo_msg.into())).await?;
                 println!("Echo sent successfully");
@@ -108,7 +107,7 @@ async fn handle_client_tls(
                 println!("Received pong");
             }
             Message::Close(frame) => {
-                println!("Received close frame: {:?}", frame);
+                println!("Received close frame: {frame:?}");
                 break;
             }
             Message::Frame(_) => {

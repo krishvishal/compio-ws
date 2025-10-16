@@ -1,20 +1,19 @@
 use compio_net::{TcpListener, TcpStream};
-use compio_runtime;
 use compio_ws::accept_async;
 use tungstenite::Message;
 
 #[compio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let listener = TcpListener::bind("127.0.0.1:9001").await?;
-    println!("WebSocket echo server listening on ws://127.0.0.1:9001");
+    let listener = TcpListener::bind("127.0.0.1:9002").await?;
+    println!("WebSocket echo server listening on ws://127.0.0.1:9002");
 
     loop {
         let (stream, addr) = listener.accept().await?;
-        println!("New client connected: {}", addr);
+        println!("New client connected: {addr}");
 
         compio_runtime::spawn(async move {
             if let Err(e) = handle_client(stream).await {
-                eprintln!("Error handling client {}: {}", addr, e);
+                eprintln!("Error handling client {addr}: {e}");
             }
         })
         .detach();
@@ -28,11 +27,11 @@ async fn handle_client(stream: TcpStream) -> Result<(), Box<dyn std::error::Erro
     loop {
         match websocket.read().await? {
             Message::Text(text) => {
-                println!("Received text: {}", text);
-                let echo_msg = format!("Echo: {}", text);
-                println!("Sending echo: {}", echo_msg);
+                println!("Received text: {}", text.len());
+                let echo_msg = format!("Echo: {text}");
+                println!("Sending echo: {}", echo_msg.len());
 
-                websocket.send(Message::Text(echo_msg.into())).await?;
+                websocket.send(Message::Text(text)).await?;
                 println!("Echo sent successfully");
             }
             Message::Binary(data) => {
@@ -50,7 +49,7 @@ async fn handle_client(stream: TcpStream) -> Result<(), Box<dyn std::error::Erro
                 println!("Received pong");
             }
             Message::Close(frame) => {
-                println!("Received close frame: {:?}", frame);
+                println!("Received close frame: {frame:?}");
                 break;
             }
             Message::Frame(_) => {

@@ -68,7 +68,7 @@ where
                 connector
                     .connect(&domain, socket)
                     .await
-                    .map_err(|e| Error::Io(e))?
+                    .map_err(Error::Io)?
             };
             Ok(MaybeTlsStream::Tls(stream))
         }
@@ -201,5 +201,7 @@ fn port(request: &Request) -> Result<u16, Error> {
             Mode::Plain => Some(80),
             Mode::Tls => Some(443),
         })
-        .ok_or(Error::Url(tungstenite::error::UrlError::NoHostName))
+        .ok_or(Error::Url(
+            tungstenite::error::UrlError::UnsupportedUrlScheme,
+        ))
 }

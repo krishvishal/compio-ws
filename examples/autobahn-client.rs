@@ -1,7 +1,7 @@
 use compio_net::TcpStream;
 use compio_ws::client_async;
 use log::*;
-use tungstenite::{Error, Message, Result};
+use tungstenite::{Error, Result};
 
 const AGENT: &str = "Tungstenite";
 
@@ -19,7 +19,7 @@ async fn get_case_count() -> Result<u32> {
 async fn update_reports() -> Result<()> {
     let stream = TcpStream::connect("127.0.0.1:9001").await?;
     let (mut socket, _) = client_async(
-        &format!("ws://localhost:9001/updateReports?agent={}", AGENT),
+        &format!("ws://localhost:9001/updateReports?agent={AGENT}"),
         stream,
     )
     .await?;
@@ -28,8 +28,8 @@ async fn update_reports() -> Result<()> {
 }
 
 async fn run_test(case: u32) -> Result<()> {
-    info!("Running test case {}", case);
-    let case_url = format!("ws://localhost:9001/runCase?case={}&agent={}", case, AGENT);
+    info!("Running test case {case}");
+    let case_url = format!("ws://localhost:9001/runCase?case={case}&agent={AGENT}");
     let stream = TcpStream::connect("127.0.0.1:9001").await?;
     let (mut ws_stream, _) = client_async(&case_url, stream).await?;
 
@@ -43,7 +43,7 @@ async fn run_test(case: u32) -> Result<()> {
                 }
             }
             Err(e) => {
-                error!("Error reading message: {}", e);
+                error!("Error reading message: {e}");
                 return Err(e);
             }
         }
@@ -62,7 +62,7 @@ async fn main() {
         if let Err(e) = run_test(case).await {
             match e {
                 Error::ConnectionClosed | Error::Protocol(_) | Error::Utf8(_) => (),
-                err => error!("Testcase failed: {}", err),
+                err => error!("Testcase failed: {err}"),
             }
         }
     }

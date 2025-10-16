@@ -1,15 +1,14 @@
 use compio_net::{TcpListener, TcpStream};
-use compio_runtime;
 use compio_ws::{accept_async_with_config, WebSocketConfig};
 use log::*;
 use std::net::SocketAddr;
-use tungstenite::{Error, Message, Result};
+use tungstenite::{Error, Result};
 
 async fn accept_connection(peer: SocketAddr, stream: TcpStream) {
     if let Err(e) = handle_connection(peer, stream).await {
         match e {
             Error::ConnectionClosed | Error::Protocol(_) | Error::Utf8(_) => (),
-            err => error!("Error processing connection: {}", err),
+            err => error!("Error processing connection: {err}"),
         }
     }
 }
@@ -23,7 +22,7 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
         .await
         .expect("Failed to accept");
 
-    info!("New WebSocket connection: {}", peer);
+    info!("New WebSocket connection: {peer}");
 
     loop {
         match ws_stream.read().await {
@@ -34,11 +33,11 @@ async fn handle_connection(peer: SocketAddr, stream: TcpStream) -> Result<()> {
             }
             Err(e) => match e {
                 Error::ConnectionClosed => {
-                    info!("Connection closed normally: {}", peer);
+                    info!("Connection closed normally: {peer}");
                     break;
                 }
                 _ => {
-                    error!("Error: {}", e);
+                    error!("Error: {e}");
                     return Err(e);
                 }
             },
@@ -54,16 +53,16 @@ async fn main() {
 
     let addr = "127.0.0.1:9002";
     let listener = TcpListener::bind(addr).await.expect("Can't listen");
-    info!("Listening on: {}", addr);
+    info!("Listening on: {addr}");
 
     loop {
         match listener.accept().await {
             Ok((stream, addr)) => {
-                info!("Peer address: {}", addr);
+                info!("Peer address: {addr}");
                 compio_runtime::spawn(accept_connection(addr, stream)).detach();
             }
             Err(e) => {
-                error!("Error accepting connection: {}", e);
+                error!("Error accepting connection: {e}");
             }
         }
     }

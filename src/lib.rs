@@ -79,39 +79,26 @@ where
 
                     match buffer_hint {
                         BufferOperation::FillFirst => {
-                            let flushed = sync_stream
-                                .flush_write_buf()
-                                .await
-                                .map_err(|e| WsError::Io(e))?;
+                            let flushed =
+                                sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
 
                             if flushed == 0 {
-                                sync_stream
-                                    .fill_read_buf()
-                                    .await
-                                    .map_err(|e| WsError::Io(e))?;
+                                sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
                             }
                             continue;
                         }
 
                         BufferOperation::FlushFirst => {
-                            sync_stream
-                                .flush_write_buf()
-                                .await
-                                .map_err(|e| WsError::Io(e))?;
+                            sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
                             continue;
                         }
 
                         BufferOperation::Standard => {
-                            let flushed = sync_stream
-                                .flush_write_buf()
-                                .await
-                                .map_err(|e| WsError::Io(e))?;
+                            let flushed =
+                                sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
 
                             if flushed == 0 {
-                                sync_stream
-                                    .fill_read_buf()
-                                    .await
-                                    .map_err(|e| WsError::Io(e))?;
+                                sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
                             }
                             continue;
                         }
@@ -123,17 +110,16 @@ where
     }
 
     pub async fn send(&mut self, message: Message) -> Result<(), WsError> {
-        let result = self
-            .handle_would_block(|ws| ws.send(message.clone()), BufferOperation::FlushFirst)
+        self.handle_would_block(|ws| ws.send(message.clone()), BufferOperation::FlushFirst)
             .await?;
 
         self.inner
             .get_mut()
             .flush_write_buf()
             .await
-            .map_err(|e| WsError::Io(e))?;
+            .map_err(WsError::Io)?;
 
-        Ok(result)
+        Ok(())
     }
 
     pub async fn read(&mut self) -> Result<Message, WsError> {
@@ -223,22 +209,14 @@ where
                     .get_mut()
                     .flush_write_buf()
                     .await
-                    .map_err(|e| WsError::Io(e))?;
+                    .map_err(WsError::Io)?;
                 return Ok(WebSocketStream { inner: websocket });
             }
             Err(HandshakeError::Interrupted(mut mid_handshake)) => {
                 let sync_stream = mid_handshake.get_mut().get_mut();
 
-                if sync_stream
-                    .flush_write_buf()
-                    .await
-                    .map_err(|e| WsError::Io(e))?
-                    == 0
-                {
-                    sync_stream
-                        .fill_read_buf()
-                        .await
-                        .map_err(|e| WsError::Io(e))?;
+                if sync_stream.flush_write_buf().await.map_err(WsError::Io)? == 0 {
+                    sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
                 }
 
                 handshake_result = mid_handshake.handshake();
@@ -282,22 +260,16 @@ where
                     .get_mut()
                     .flush_write_buf()
                     .await
-                    .map_err(|e| WsError::Io(e))?;
+                    .map_err(WsError::Io)?;
                 return Ok((WebSocketStream { inner: websocket }, response));
             }
             Err(HandshakeError::Interrupted(mut mid_handshake)) => {
                 let sync_stream = mid_handshake.get_mut().get_mut();
 
                 // For handshake: always try both operations
-                sync_stream
-                    .flush_write_buf()
-                    .await
-                    .map_err(|e| WsError::Io(e))?;
+                sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
 
-                sync_stream
-                    .fill_read_buf()
-                    .await
-                    .map_err(|e| WsError::Io(e))?;
+                sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
 
                 handshake_result = mid_handshake.handshake();
             }
