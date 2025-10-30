@@ -1,3 +1,4 @@
+pub mod compio_stream;
 pub mod stream;
 
 // #[cfg(feature = "rustls")]
@@ -5,8 +6,8 @@ pub mod rustls;
 
 use std::io::ErrorKind;
 
-use compio::io::compat::SyncStream;
 use compio_io::{AsyncRead, AsyncWrite};
+use compio_stream::CompioStream;
 
 use tungstenite::{
     client::IntoClientRequest,
@@ -32,7 +33,7 @@ pub use crate::rustls::{
 };
 
 pub struct WebSocketStream<S> {
-    inner: WebSocket<SyncStream<S>>,
+    inner: WebSocket<CompioStream<S>>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -50,16 +51,29 @@ where
     S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
 {
     fn new(stream: S, role: Role) -> Self {
-        let sync_stream = SyncStream::new(stream);
+        let compio_stream = CompioStream::new(stream);
         Self {
-            inner: WebSocket::from_raw_socket(sync_stream, role, None),
+            inner: WebSocket::from_raw_socket(compio_stream, role, None),
         }
     }
 
     fn with_config(stream: S, role: Role, config: Option<WebSocketConfig>) -> Self {
-        let sync_stream = SyncStream::new(stream);
+        let compio_stream = CompioStream::new(stream);
         Self {
-            inner: WebSocket::from_raw_socket(sync_stream, role, config),
+            inner: WebSocket::from_raw_socket(compio_stream, role, config),
+        }
+    }
+
+    /// Create with custom buffer capacity
+    fn with_buffer_capacity(
+        stream: S,
+        role: Role,
+        capacity: usize,
+        config: Option<WebSocketConfig>,
+    ) -> Self {
+        let compio_stream = CompioStream::with_capacity(capacity, stream);
+        Self {
+            inner: WebSocket::from_raw_socket(compio_stream, role, config),
         }
     }
 
@@ -69,36 +83,36 @@ where
         buffer_hint: BufferOperation,
     ) -> Result<T, WsError>
     where
-        F: FnMut(&mut WebSocket<SyncStream<S>>) -> Result<T, WsError>,
+        F: FnMut(&mut WebSocket<CompioStream<S>>) -> Result<T, WsError>,
     {
         loop {
             match operation(&mut self.inner) {
                 Ok(result) => return Ok(result),
                 Err(WsError::Io(ref e)) if e.kind() == ErrorKind::WouldBlock => {
-                    let sync_stream = self.inner.get_mut();
+                    let compio_stream = self.inner.get_mut();
 
                     match buffer_hint {
                         BufferOperation::FillFirst => {
                             let flushed =
-                                sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
+                                compio_stream.flush_write_buf().await.map_err(WsError::Io)?;
 
                             if flushed == 0 {
-                                sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
+                                compio_stream.fill_read_buf().await.map_err(WsError::Io)?;
                             }
                             continue;
                         }
 
                         BufferOperation::FlushFirst => {
-                            sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
+                            compio_stream.flush_write_buf().await.map_err(WsError::Io)?;
                             continue;
                         }
 
                         BufferOperation::Standard => {
                             let flushed =
-                                sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
+                                compio_stream.flush_write_buf().await.map_err(WsError::Io)?;
 
                             if flushed == 0 {
-                                sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
+                                compio_stream.fill_read_buf().await.map_err(WsError::Io)?;
                             }
                             continue;
                         }
@@ -110,9 +124,11 @@ where
     }
 
     pub async fn send(&mut self, message: Message) -> Result<(), WsError> {
-        self.handle_would_block(|ws| ws.send(message.clone()), BufferOperation::FlushFirst)
-            .await?;
+        // Send the message - this buffers it
+        // Since CompioStream::flush() now returns Ok, this should succeed on first try
+        self.inner.send(message)?;
 
+        // flush the buffer to the network
         self.inner
             .get_mut()
             .flush_write_buf()
@@ -123,15 +139,30 @@ where
     }
 
     pub async fn read(&mut self) -> Result<Message, WsError> {
-        let result = self
-            .handle_would_block(|ws| ws.read(), BufferOperation::FillFirst)
-            .await;
-
-        // always flush even on error.
-        // when ConnectionClosed is returned, the close frame was written but not flushed
-        let _ = self.inner.get_mut().flush_write_buf().await;
-
-        result
+        loop {
+            match self.inner.read() {
+                Ok(msg) => {
+                    // Always try to flush after read (close frames need this)
+                    let _ = self.inner.get_mut().flush_write_buf().await;
+                    return Ok(msg);
+                }
+                Err(WsError::Io(ref e)) if e.kind() == ErrorKind::WouldBlock => {
+                    // Need more data - fill the read buffer
+                    self.inner
+                        .get_mut()
+                        .fill_read_buf()
+                        .await
+                        .map_err(WsError::Io)?;
+                    // Retry the read
+                    continue;
+                }
+                Err(e) => {
+                    // Always try to flush on error (close frames)
+                    let _ = self.inner.get_mut().flush_write_buf().await;
+                    return Err(e);
+                }
+            }
+        }
     }
 
     pub async fn close(&mut self, close_frame: Option<CloseFrame>) -> Result<(), WsError> {
@@ -150,7 +181,7 @@ where
         self.inner.get_mut().get_mut()
     }
 
-    pub fn get_inner(self) -> WebSocket<SyncStream<S>> {
+    pub fn get_inner(self) -> WebSocket<CompioStream<S>> {
         self.inner
     }
 }
@@ -199,8 +230,8 @@ where
     S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
     C: Callback,
 {
-    let sync_stream = SyncStream::with_capacity(1024 * 1024, stream);
-    let mut handshake_result = tungstenite::accept_hdr_with_config(sync_stream, callback, config);
+    let compio_stream = CompioStream::new(stream);
+    let mut handshake_result = tungstenite::accept_hdr_with_config(compio_stream, callback, config);
 
     loop {
         match handshake_result {
@@ -213,11 +244,11 @@ where
                 return Ok(WebSocketStream { inner: websocket });
             }
             Err(HandshakeError::Interrupted(mut mid_handshake)) => {
-                let sync_stream = mid_handshake.get_mut().get_mut();
+                let compio_stream = mid_handshake.get_mut().get_mut();
 
-                sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
+                compio_stream.flush_write_buf().await.map_err(WsError::Io)?;
 
-                sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
+                compio_stream.fill_read_buf().await.map_err(WsError::Io)?;
 
                 handshake_result = mid_handshake.handshake();
             }
@@ -248,9 +279,9 @@ where
     R: IntoClientRequest,
     S: AsyncRead + AsyncWrite + Unpin,
 {
-    let sync_stream = SyncStream::with_capacity(1024 * 1024, stream);
+    let compio_stream = CompioStream::new(stream);
     let mut handshake_result =
-        tungstenite::client::client_with_config(request, sync_stream, config);
+        tungstenite::client::client_with_config(request, compio_stream, config);
 
     loop {
         match handshake_result {
@@ -264,12 +295,12 @@ where
                 return Ok((WebSocketStream { inner: websocket }, response));
             }
             Err(HandshakeError::Interrupted(mut mid_handshake)) => {
-                let sync_stream = mid_handshake.get_mut().get_mut();
+                let compio_stream = mid_handshake.get_mut().get_mut();
 
                 // For handshake: always try both operations
-                sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
+                compio_stream.flush_write_buf().await.map_err(WsError::Io)?;
 
-                sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
+                compio_stream.fill_read_buf().await.map_err(WsError::Io)?;
 
                 handshake_result = mid_handshake.handshake();
             }
@@ -281,6 +312,7 @@ where
 }
 
 #[inline]
+#[allow(clippy::result_large_err)]
 pub(crate) fn domain(
     request: &tungstenite::handshake::client::Request,
 ) -> Result<String, tungstenite::Error> {

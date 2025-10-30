@@ -29,7 +29,7 @@ async fn handle_client(stream: TcpStream) -> Result<(), Box<dyn std::error::Erro
             Message::Text(text) => {
                 println!("Received text: {}", text.len());
                 let echo_msg = format!("Echo: {text}");
-                println!("Sending echo: {}", echo_msg.len());
+                println!("Sending echo: {echo_msg}");
 
                 websocket.send(Message::Text(text)).await?;
                 println!("Echo sent successfully");

@@ -6,8 +6,8 @@ use tungstenite::Message;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Connecting to WebSocket server");
 
-    let stream = TcpStream::connect("127.0.0.1:9001").await?;
-    let (mut websocket, _response) = client_async("ws://127.0.0.1:9001", stream).await?;
+    let stream = TcpStream::connect("127.0.0.1:9002").await?;
+    let (mut websocket, _response) = client_async("ws://127.0.0.1:9002", stream).await?;
 
     println!("Connected to WebSocket server");
 

@@ -5,6 +5,7 @@ use std::io::Result as IoResult;
 
 /// Stream that can be either plain TCP or TLS-encrypted
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum MaybeTlsStream<S> {
     /// Plain, unencrypted stream
     Plain(S),

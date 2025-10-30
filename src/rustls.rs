@@ -193,6 +193,7 @@ where
 }
 
 #[inline]
+#[allow(clippy::result_large_err)]
 fn port(request: &Request) -> Result<u16, Error> {
     request
         .uri()
