@@ -2,5 +2,7 @@
 *.crt
 *.pem
 *.key
+*.py
 autobahn/server
 autobahn/client
+.Cargo.lock
