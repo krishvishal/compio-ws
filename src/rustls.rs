@@ -142,12 +142,13 @@ pub async fn connect_async<R>(
 where
     R: IntoClientRequest + Unpin,
 {
-    connect_async_with_config(request, None).await
+    connect_async_with_config(request, None, false).await
 }
 
 pub async fn connect_async_with_config<R>(
     request: R,
     config: Option<WebSocketConfig>,
+    disable_nagle: bool,
 ) -> Result<(WebSocketStream<ConnectStream>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
@@ -160,6 +161,11 @@ where
     let socket = TcpStream::connect((domain.as_str(), port))
         .await
         .map_err(Error::Io)?;
+
+    if disable_nagle {
+        socket.set_nodelay(true).map_err(Error::Io)?;
+    }
+
     client_async_tls_with_connector_and_config(request, socket, None, config).await
 }
 
