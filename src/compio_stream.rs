@@ -4,7 +4,7 @@ use compio_buf::{BufResult, IntoInner, IoBuf};
 use compio_io::{AsyncRead, AsyncWrite};
 
 #[derive(Debug)]
-pub struct CompioStream<S> {
+pub struct GrowableSyncStream<S> {
     inner: S,
     read_buf: Vec<u8>,
     read_pos: usize,
@@ -14,7 +14,7 @@ pub struct CompioStream<S> {
     max_buffer_size: usize,
 }
 
-impl<S> CompioStream<S> {
+impl<S> GrowableSyncStream<S> {
     const DEFAULT_BASE_CAPACITY: usize = 8 * 1024; // 8KB base
     const DEFAULT_MAX_BUFFER: usize = 64 * 1024 * 1024; // 64MB max
 
@@ -81,7 +81,7 @@ impl<S> CompioStream<S> {
     }
 }
 
-impl<S> Read for CompioStream<S> {
+impl<S> Read for GrowableSyncStream<S> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let available = self.available_read();
 
@@ -100,7 +100,7 @@ impl<S> Read for CompioStream<S> {
     }
 }
 
-impl<S> Write for CompioStream<S> {
+impl<S> Write for GrowableSyncStream<S> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         // Check if we should flush first
         if self.write_buf.len() > self.base_capacity * 2 / 3 && !self.write_buf.is_empty() {
@@ -134,7 +134,7 @@ impl<S> Write for CompioStream<S> {
     }
 }
 
-impl<S: AsyncRead> CompioStream<S> {
+impl<S: AsyncRead> GrowableSyncStream<S> {
     pub async fn fill_read_buf(&mut self) -> io::Result<usize> {
         if self.eof {
             return Ok(0);
@@ -206,7 +206,7 @@ impl<S: AsyncRead> CompioStream<S> {
     }
 }
 
-impl<S: AsyncWrite> CompioStream<S> {
+impl<S: AsyncWrite> GrowableSyncStream<S> {
     pub async fn flush_write_buf(&mut self) -> io::Result<usize> {
         if self.write_buf.is_empty() {
             return Ok(0);
