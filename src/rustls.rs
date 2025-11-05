@@ -24,7 +24,7 @@ async fn wrap_stream<S>(
     mode: Mode,
 ) -> Result<AutoStream<S>, Error>
 where
-    S: AsyncRead + AsyncWrite + Unpin,
+    S: AsyncRead + AsyncWrite + Unpin + 'static,
 {
     match mode {
         Mode::Plain => Ok(MaybeTlsStream::Plain(socket)),
@@ -33,61 +33,66 @@ where
                 let connector = if let Some(connector) = connector {
                     connector
                 } else {
-                    #[allow(unused_mut)]
-                    let mut root_store = RootCertStore::empty();
+                    // Only create root_store when we actually have certificate features enabled
+                    #[cfg(any(feature = "rustls-native-certs", feature = "webpki-roots"))]
+                    let mut root_store = {
+                        let mut store = RootCertStore::empty();
 
-                    #[cfg(feature = "rustls-native-certs")]
-                    {
-                        let cert_result = rustls_native_certs::load_native_certs();
+                        #[cfg(feature = "rustls-native-certs")]
+                        {
+                            let cert_result = rustls_native_certs::load_native_certs();
 
-                        // Log any errors that occurred
-                        for err in &cert_result.errors {
-                            log::warn!("Error loading native certificate: {err}");
-                        }
+                            // Log any errors that occurred
+                            for err in &cert_result.errors {
+                                log::warn!("Error loading native certificate: {err}");
+                            }
 
-                        if !cert_result.certs.is_empty() {
-                            let (added, ignored) =
-                                root_store.add_parsable_certificates(cert_result.certs);
-                            log::debug!(
-                                "Added {added} native root certificates (ignored {ignored})"
-                            );
+                            if !cert_result.certs.is_empty() {
+                                let (added, ignored) =
+                                    store.add_parsable_certificates(cert_result.certs);
+                                log::debug!(
+                                    "Added {added} native root certificates (ignored {ignored})"
+                                );
 
-                            // Only fail if webpki-roots is NOT enabled as fallback
-                            #[cfg(not(feature = "webpki-roots"))]
-                            if added == 0 {
+                                // Only fail if webpki-roots is NOT enabled as fallback
+                                #[cfg(not(feature = "webpki-roots"))]
+                                if added == 0 {
+                                    return Err(Error::Io(std::io::Error::new(
+                                        std::io::ErrorKind::NotFound,
+                                        "No valid native root certificates found",
+                                    )));
+                                }
+                            } else {
+                                log::warn!("No native root certificates found");
+
+                                // Only fail if webpki-roots is NOT enabled as fallback
+                                #[cfg(not(feature = "webpki-roots"))]
                                 return Err(Error::Io(std::io::Error::new(
                                     std::io::ErrorKind::NotFound,
-                                    "No valid native root certificates found",
+                                    "No native root certificates found",
                                 )));
                             }
-                        } else {
-                            log::warn!("No native root certificates found");
-
-                            // Only fail if webpki-roots is NOT enabled as fallback
-                            #[cfg(not(feature = "webpki-roots"))]
-                            return Err(Error::Io(std::io::Error::new(
-                                std::io::ErrorKind::NotFound,
-                                "No native root certificates found",
-                            )));
                         }
-                    }
 
-                    // Load webpki-roots whenever the feature is enabled
-                    // This serves as a fallback when native-certs is also enabled
-                    #[cfg(feature = "webpki-roots")]
-                    {
-                        use log::debug;
+                        // Load webpki-roots whenever the feature is enabled
+                        // This serves as a fallback when native-certs is also enabled
+                        #[cfg(feature = "webpki-roots")]
+                        {
+                            use log::debug;
 
-                        let webpki_certs: Vec<_> =
-                            webpki_roots::TLS_SERVER_ROOTS.iter().cloned().collect();
-                        root_store.extend(webpki_certs);
-                        debug!(
-                            "Added {} webpki root certificates",
-                            webpki_roots::TLS_SERVER_ROOTS.len()
-                        );
-                    }
+                            let webpki_certs: Vec<_> =
+                                webpki_roots::TLS_SERVER_ROOTS.iter().cloned().collect();
+                            store.extend(webpki_certs);
+                            debug!(
+                                "Added {} webpki root certificates",
+                                webpki_roots::TLS_SERVER_ROOTS.len()
+                            );
+                        }
 
-                    // Ensure we have at least some root certificates
+                        store
+                    };
+
+                    // Check if we have neither feature enabled
                     #[cfg(not(any(feature = "rustls-native-certs", feature = "webpki-roots")))]
                     {
                         return Err(Error::Io(std::io::Error::new(
@@ -96,6 +101,7 @@ where
                         )));
                     }
 
+                    // Check if root_store is empty (only when features are enabled)
                     #[cfg(any(feature = "rustls-native-certs", feature = "webpki-roots"))]
                     if root_store.is_empty() {
                         return Err(Error::Io(std::io::Error::new(
@@ -104,11 +110,15 @@ where
                         )));
                     }
 
-                    TlsConnector::from(Arc::new(
-                        ClientConfig::builder()
-                            .with_root_certificates(root_store)
-                            .with_no_client_auth(),
-                    ))
+                    // Create the TLS connector (only when features are enabled)
+                    #[cfg(any(feature = "rustls-native-certs", feature = "webpki-roots"))]
+                    {
+                        TlsConnector::from(Arc::new(
+                            ClientConfig::builder()
+                                .with_root_certificates(root_store)
+                                .with_no_client_auth(),
+                        ))
+                    }
                 };
 
                 connector
@@ -129,7 +139,7 @@ pub async fn client_async_tls<R, S>(
 ) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
-    S: AsyncRead + AsyncWrite + Unpin,
+    S: AsyncRead + AsyncWrite + Unpin + 'static,
     AutoStream<S>: Unpin,
 {
     client_async_tls_with_connector_and_config(request, stream, None, None).await
@@ -143,7 +153,7 @@ pub async fn client_async_tls_with_config<R, S>(
 ) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
-    S: AsyncRead + AsyncWrite + Unpin,
+    S: AsyncRead + AsyncWrite + Unpin + 'static,
     AutoStream<S>: Unpin,
 {
     client_async_tls_with_connector_and_config(request, stream, None, config).await
@@ -157,7 +167,7 @@ pub async fn client_async_tls_with_connector<R, S>(
 ) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
-    S: AsyncRead + AsyncWrite + Unpin,
+    S: AsyncRead + AsyncWrite + Unpin + 'static,
     AutoStream<S>: Unpin,
 {
     client_async_tls_with_connector_and_config(request, stream, connector, None).await
@@ -173,7 +183,7 @@ pub async fn client_async_tls_with_connector_and_config<R, S>(
 ) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
 where
     R: IntoClientRequest + Unpin,
-    S: AsyncRead + AsyncWrite + Unpin,
+    S: AsyncRead + AsyncWrite + Unpin + 'static,
     AutoStream<S>: Unpin,
 {
     let request: Request = request.into_client_request()?;

@@ -6,7 +6,7 @@
 //!
 //! Each WebSocket stream implements message reading and writing.
 
-pub mod compio_stream;
+pub mod growable_sync_stream;
 pub mod stream;
 
 #[cfg(feature = "rustls")]
@@ -15,7 +15,7 @@ pub mod rustls;
 use std::io::ErrorKind;
 
 use compio_io::{AsyncRead, AsyncWrite};
-use compio_stream::GrowableSyncStream;
+use growable_sync_stream::GrowableSyncStream;
 
 use tungstenite::{
     client::IntoClientRequest,
