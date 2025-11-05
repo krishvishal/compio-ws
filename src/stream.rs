@@ -1,5 +1,6 @@
 use compio_buf::{BufResult, IoBuf, IoBufMut};
 use compio_io::{AsyncRead, AsyncWrite};
+#[cfg(feature = "rustls")]
 use compio_tls::TlsStream;
 use std::io::Result as IoResult;
 

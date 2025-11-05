@@ -12,7 +12,7 @@ use compio_stream::GrowableSyncStream;
 use tungstenite::{
     client::IntoClientRequest,
     handshake::server::{Callback, NoCallback},
-    protocol::{CloseFrame, Role},
+    protocol::CloseFrame,
     Error as WsError, HandshakeError, Message, WebSocket,
 };
 
@@ -36,93 +36,10 @@ pub struct WebSocketStream<S> {
     inner: WebSocket<GrowableSyncStream<S>>,
 }
 
-#[derive(Debug, Clone, Copy)]
-enum BufferOperation {
-    /// Try to fill read buffer first (for read operations)
-    FillFirst,
-    /// Try to flush write buffer first (for write operations)
-    FlushFirst,
-    /// Use the standard pattern: flush first, then fill if nothing was flushed
-    Standard,
-}
-
 impl<S> WebSocketStream<S>
 where
     S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
 {
-    fn new(stream: S, role: Role) -> Self {
-        let sync_stream = GrowableSyncStream::new(stream);
-        Self {
-            inner: WebSocket::from_raw_socket(sync_stream, role, None),
-        }
-    }
-
-    fn with_config(stream: S, role: Role, config: Option<WebSocketConfig>) -> Self {
-        let sync_stream = GrowableSyncStream::new(stream);
-        Self {
-            inner: WebSocket::from_raw_socket(sync_stream, role, config),
-        }
-    }
-
-    /// Create with custom buffer capacity
-    fn with_buffer_capacity(
-        stream: S,
-        role: Role,
-        capacity: usize,
-        config: Option<WebSocketConfig>,
-    ) -> Self {
-        let sync_stream = GrowableSyncStream::with_capacity(capacity, stream);
-        Self {
-            inner: WebSocket::from_raw_socket(sync_stream, role, config),
-        }
-    }
-
-    async fn handle_would_block<T, F>(
-        &mut self,
-        mut operation: F,
-        buffer_hint: BufferOperation,
-    ) -> Result<T, WsError>
-    where
-        F: FnMut(&mut WebSocket<GrowableSyncStream<S>>) -> Result<T, WsError>,
-    {
-        loop {
-            match operation(&mut self.inner) {
-                Ok(result) => return Ok(result),
-                Err(WsError::Io(ref e)) if e.kind() == ErrorKind::WouldBlock => {
-                    let sync_stream = self.inner.get_mut();
-
-                    match buffer_hint {
-                        BufferOperation::FillFirst => {
-                            let flushed =
-                                sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
-
-                            if flushed == 0 {
-                                sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
-                            }
-                            continue;
-                        }
-
-                        BufferOperation::FlushFirst => {
-                            sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
-                            continue;
-                        }
-
-                        BufferOperation::Standard => {
-                            let flushed =
-                                sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
-
-                            if flushed == 0 {
-                                sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
-                            }
-                            continue;
-                        }
-                    }
-                }
-                Err(e) => return Err(e),
-            }
-        }
-    }
-
     pub async fn send(&mut self, message: Message) -> Result<(), WsError> {
         // Send the message - this buffers it
         // Since CompioStream::flush() now returns Ok, this should succeed on first try
@@ -166,11 +83,22 @@ where
     }
 
     pub async fn close(&mut self, close_frame: Option<CloseFrame>) -> Result<(), WsError> {
-        self.handle_would_block(
-            |ws| ws.close(close_frame.clone()),
-            BufferOperation::Standard,
-        )
-        .await
+        loop {
+            match self.inner.close(close_frame.clone()) {
+                Ok(()) => return Ok(()),
+                Err(WsError::Io(ref e)) if e.kind() == ErrorKind::WouldBlock => {
+                    let sync_stream = self.inner.get_mut();
+
+                    let flushed = sync_stream.flush_write_buf().await.map_err(WsError::Io)?;
+
+                    if flushed == 0 {
+                        sync_stream.fill_read_buf().await.map_err(WsError::Io)?;
+                    }
+                    continue;
+                }
+                Err(e) => return Err(e),
+            }
+        }
     }
 
     pub fn get_ref(&self) -> &S {

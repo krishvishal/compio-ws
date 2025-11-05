@@ -33,29 +33,75 @@ where
                 let connector = if let Some(connector) = connector {
                     connector
                 } else {
+                    #[allow(unused_mut)]
                     let mut root_store = RootCertStore::empty();
 
                     #[cfg(feature = "rustls-native-certs")]
                     {
-                        match rustls_native_certs::load_native_certs() {
-                            Ok(certs) => {
-                                let (added, ignored) = root_store.add_parsable_certificates(certs);
-                                log::debug!(
-                                    "Added {added} native root certificates (ignored {ignored})"
-                                );
-                            }
-                            Err(e) => {
+                        let cert_result = rustls_native_certs::load_native_certs();
+
+                        // Log any errors that occurred
+                        for err in &cert_result.errors {
+                            log::warn!("Error loading native certificate: {err}");
+                        }
+
+                        if !cert_result.certs.is_empty() {
+                            let (added, ignored) =
+                                root_store.add_parsable_certificates(cert_result.certs);
+                            log::debug!(
+                                "Added {added} native root certificates (ignored {ignored})"
+                            );
+
+                            // Only fail if webpki-roots is NOT enabled as fallback
+                            #[cfg(not(feature = "webpki-roots"))]
+                            if added == 0 {
                                 return Err(Error::Io(std::io::Error::new(
-                                    std::io::ErrorKind::Other,
-                                    e,
+                                    std::io::ErrorKind::NotFound,
+                                    "No valid native root certificates found",
                                 )));
                             }
+                        } else {
+                            log::warn!("No native root certificates found");
+
+                            // Only fail if webpki-roots is NOT enabled as fallback
+                            #[cfg(not(feature = "webpki-roots"))]
+                            return Err(Error::Io(std::io::Error::new(
+                                std::io::ErrorKind::NotFound,
+                                "No native root certificates found",
+                            )));
                         }
                     }
 
-                    #[cfg(all(feature = "webpki-roots", not(feature = "rustls-native-certs")))]
+                    // Load webpki-roots whenever the feature is enabled
+                    // This serves as a fallback when native-certs is also enabled
+                    #[cfg(feature = "webpki-roots")]
                     {
-                        root_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+                        use log::debug;
+
+                        let webpki_certs: Vec<_> =
+                            webpki_roots::TLS_SERVER_ROOTS.iter().cloned().collect();
+                        root_store.extend(webpki_certs);
+                        debug!(
+                            "Added {} webpki root certificates",
+                            webpki_roots::TLS_SERVER_ROOTS.len()
+                        );
+                    }
+
+                    // Ensure we have at least some root certificates
+                    #[cfg(not(any(feature = "rustls-native-certs", feature = "webpki-roots")))]
+                    {
+                        return Err(Error::Io(std::io::Error::new(
+                            std::io::ErrorKind::NotFound,
+                            "No root certificate features enabled. Enable either 'rustls-native-certs' or 'webpki-roots'",
+                        )));
+                    }
+
+                    #[cfg(any(feature = "rustls-native-certs", feature = "webpki-roots"))]
+                    if root_store.is_empty() {
+                        return Err(Error::Io(std::io::Error::new(
+                            std::io::ErrorKind::NotFound,
+                            "No root certificates available",
+                        )));
                     }
 
                     TlsConnector::from(Arc::new(
