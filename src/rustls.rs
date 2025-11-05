@@ -121,6 +121,50 @@ where
     }
 }
 
+/// Creates a WebSocket handshake from a request and a stream,
+/// upgrading the stream to TLS if required.
+pub async fn client_async_tls<R, S>(
+    request: R,
+    stream: S,
+) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+    S: AsyncRead + AsyncWrite + Unpin,
+    AutoStream<S>: Unpin,
+{
+    client_async_tls_with_connector_and_config(request, stream, None, None).await
+}
+
+/// The same as `client_async_tls()` but the one can specify a websocket configuration.
+pub async fn client_async_tls_with_config<R, S>(
+    request: R,
+    stream: S,
+    config: Option<WebSocketConfig>,
+) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+    S: AsyncRead + AsyncWrite + Unpin,
+    AutoStream<S>: Unpin,
+{
+    client_async_tls_with_connector_and_config(request, stream, None, config).await
+}
+
+/// The same as `client_async_tls()` but the one can specify a connector.
+pub async fn client_async_tls_with_connector<R, S>(
+    request: R,
+    stream: S,
+    connector: Option<Connector>,
+) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
+where
+    R: IntoClientRequest + Unpin,
+    S: AsyncRead + AsyncWrite + Unpin,
+    AutoStream<S>: Unpin,
+{
+    client_async_tls_with_connector_and_config(request, stream, connector, None).await
+}
+
+/// The same as `client_async_tls()` but the one can specify a websocket configuration,
+/// and an optional connector.
 pub async fn client_async_tls_with_connector_and_config<R, S>(
     request: R,
     stream: S,
@@ -142,46 +186,9 @@ where
     client_async_with_config(request, stream, config).await
 }
 
-pub async fn client_async_tls<R, S>(
-    request: R,
-    stream: S,
-) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
-where
-    R: IntoClientRequest + Unpin,
-    S: AsyncRead + AsyncWrite + Unpin,
-    AutoStream<S>: Unpin,
-{
-    client_async_tls_with_connector_and_config(request, stream, None, None).await
-}
-
-pub async fn client_async_tls_with_config<R, S>(
-    request: R,
-    stream: S,
-    config: Option<WebSocketConfig>,
-) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
-where
-    R: IntoClientRequest + Unpin,
-    S: AsyncRead + AsyncWrite + Unpin,
-    AutoStream<S>: Unpin,
-{
-    client_async_tls_with_connector_and_config(request, stream, None, config).await
-}
-
-pub async fn client_async_tls_with_connector<R, S>(
-    request: R,
-    stream: S,
-    connector: Option<Connector>,
-) -> Result<(WebSocketStream<AutoStream<S>>, Response), Error>
-where
-    R: IntoClientRequest + Unpin,
-    S: AsyncRead + AsyncWrite + Unpin,
-    AutoStream<S>: Unpin,
-{
-    client_async_tls_with_connector_and_config(request, stream, connector, None).await
-}
-
 pub type ConnectStream = AutoStream<TcpStream>;
 
+/// Connect to a given URL.
 pub async fn connect_async<R>(
     request: R,
 ) -> Result<(WebSocketStream<ConnectStream>, Response), Error>
@@ -191,6 +198,9 @@ where
     connect_async_with_config(request, None, false).await
 }
 
+/// The same as `connect_async()` but the one can specify a websocket configuration.
+/// `disable_nagle` specifies if the Nagle's algorithm must be disabled, i.e. `set_nodelay(true)`.
+/// If you don't know what the Nagle's algorithm is, better leave it to `false`.
 pub async fn connect_async_with_config<R>(
     request: R,
     config: Option<WebSocketConfig>,
@@ -215,6 +225,7 @@ where
     client_async_tls_with_connector_and_config(request, socket, None, config).await
 }
 
+/// The same as `connect_async()` but the one can specify a TLS connector.
 pub async fn connect_async_with_tls_connector<R>(
     request: R,
     connector: Option<Connector>,
@@ -225,6 +236,8 @@ where
     connect_async_with_tls_connector_and_config(request, connector, None).await
 }
 
+/// The same as `connect_async()` but the one can specify a websocket configuration,
+/// a TLS connector, and whether to disable Nagle's algorithm.
 pub async fn connect_async_with_tls_connector_and_config<R>(
     request: R,
     connector: Option<Connector>,

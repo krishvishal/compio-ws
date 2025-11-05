@@ -1,3 +1,11 @@
+//! Async WebSocket support for compio.
+//!
+//! This library is an implementation of WebSocket handshakes and streams for compio.
+//! It is based on the tungstenite crate which implements all required WebSocket protocol
+//! logic. This crate brings compio support / compio integration to it.
+//!
+//! Each WebSocket stream implements message reading and writing.
+
 pub mod compio_stream;
 pub mod stream;
 
@@ -114,6 +122,17 @@ where
     }
 }
 
+/// Accepts a new WebSocket connection with the provided stream.
+///
+/// This function will internally call `server::accept` to create a
+/// handshake representation and returns a future representing the
+/// resolution of the WebSocket handshake. The returned future will resolve
+/// to either `WebSocketStream<S>` or `Error` depending if it's successful
+/// or not.
+///
+/// This is typically used after a socket has been accepted from a
+/// `TcpListener`. That socket is then passed to this function to perform
+/// the server half of accepting a client's websocket connection.
 pub async fn accept_async<S>(stream: S) -> Result<WebSocketStream<S>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
@@ -121,6 +140,8 @@ where
     accept_hdr_async(stream, NoCallback).await
 }
 
+/// The same as `accept_async()` but the one can specify a websocket configuration.
+/// Please refer to `accept_async()` for more details.
 pub async fn accept_async_with_config<S>(
     stream: S,
     config: Option<WebSocketConfig>,
@@ -130,7 +151,11 @@ where
 {
     accept_hdr_with_config_async(stream, NoCallback, config).await
 }
-
+/// Accepts a new WebSocket connection with the provided stream.
+///
+/// This function does the same as `accept_async()` but accepts an extra callback
+/// for header processing. The callback receives headers of the incoming
+/// requests and is able to add extra headers to the reply.
 pub async fn accept_hdr_async<S, C>(stream: S, callback: C) -> Result<WebSocketStream<S>, WsError>
 where
     S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
@@ -139,16 +164,8 @@ where
     accept_hdr_with_config_async(stream, callback, None).await
 }
 
-pub async fn accept_async_tls_with_config<S>(
-    stream: S,
-    config: Option<WebSocketConfig>,
-) -> Result<WebSocketStream<S>, WsError>
-where
-    S: AsyncRead + AsyncWrite + Unpin + std::fmt::Debug,
-{
-    accept_hdr_with_config_async(stream, NoCallback, config).await
-}
-
+/// The same as `accept_hdr_async()` but the one can specify a websocket configuration.
+/// Please refer to `accept_hdr_async()` for more details.
 pub async fn accept_hdr_with_config_async<S, C>(
     stream: S,
     callback: C,
@@ -187,6 +204,19 @@ where
     }
 }
 
+/// Creates a WebSocket handshake from a request and a stream.
+///
+/// For convenience, the user may call this with a url string, a URL,
+/// or a `Request`. Calling with `Request` allows the user to add
+/// a WebSocket protocol or other custom headers.
+///
+/// Internally, this creates a handshake representation and returns
+/// a future representing the resolution of the WebSocket handshake. The
+/// returned future will resolve to either `WebSocketStream<S>` or `Error`
+/// depending on whether the handshake is successful.
+///
+/// This is typically used for clients who have already established, for
+/// example, a TCP connection to the remote server.
 pub async fn client_async<R, S>(
     request: R,
     stream: S,
@@ -198,6 +228,8 @@ where
     client_async_with_config(request, stream, None).await
 }
 
+/// The same as `client_async()` but the one can specify a websocket configuration.
+/// Please refer to `client_async()` for more details.
 pub async fn client_async_with_config<R, S>(
     request: R,
     stream: S,
